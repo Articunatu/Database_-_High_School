@@ -1,7 +1,7 @@
 Use HighSchool
 
-select (P_Förnamn + char(9) + P_Efternamn) as 'Lärare' from tblPersonal_
-where P_Arbete = 'Lärare'
+select (P_Förnamn + char(9) + P_Efternamn) as 'Personal', P_Arbete as 'Arbetsroll' from tblPersonal_
+--where P_Arbete = 'Lärare'
 
 select * from tblKlasser
 
@@ -18,13 +18,20 @@ where DATEDIFF(DAY, EK_BetygDatum, GETDATE()) <= 31;
 GO
 
 create proc spUtvaldPersonal
-@ValdKategori varchar(10)
-as begin
-select (P_Förnamn + char(9) + P_Efternamn), P_Arbete from tblPersonal_
-where P_Arbete = @ValdKategori
+@ValdKategori varchar(20)
+as 
+if (@ValdKategori = 'Inget')
+begin
+select P_ID, P_Förnamn, P_Efternamn, P_Arbete  from tblPersonal_
+end
+else
+begin
+select P_ID, P_Förnamn, P_Efternamn, P_Arbete  from tblPersonal_
+where P_Arbete = @ValdKategori 
 END
 
-exec spUtvaldPersonal Lärare
+drop proc spUtvaldPersonal
+exec spUtvaldPersonal 'SYV'  
 
 GO
 
@@ -97,7 +104,6 @@ order by E_Efternamn asc
 
 GO
 
-
 create proc spSkapaElever
 @ElevID int, @ElevFörnamn varchar(20), @ElevEfternamn varchar(20), @ElevPersonnummer varchar(20), @ElevKlassID int
 as begin
@@ -109,7 +115,7 @@ END
 
 GO
 
-exec spSkapaElever @ElevID, @ElevFörnamn, @ElevEfternamn, @ElevPersonnummer, @ElevKlassID
+exec spSkapaElever 100, 'Jens', 'Hult', '20040101-1551', 9
 
 --begin try
 --  begin transaction

@@ -73,19 +73,33 @@ namespace HighSchoolDB
         static void ViewStaff()
         {
             Console.WriteLine("PERSONAL:\n");
-            Console.Write("Vill du se all personal?\n Skriv då ja: ");
+            Console.Write("Vill du se all personal?\nSkriv då ja: ");
             string answer = Console.ReadLine();
             if (answer == "ja")
             {
                 ///Call view for all staff
+                List<TblPersonal> chooseStaff = context.TblPersonalen.FromSqlRaw($"EXEC spUtvaldPersonal Inget").ToList();
+                Console.WriteLine();
+                foreach (var item in chooseStaff)
+                {
+                    Console.WriteLine("Namn: " + item.PFörnamn + " " + item.PEfternamn);
+                    Console.WriteLine("Arbete: " + item.PArbete + "\n");
+                }
             }
             else
             {
-                Console.Write("Skriv vilket arbete ska personalen ha: ");
+                Console.Write("Skriv vilket arbete personalen ska ha: ");
                 string chosenWork = Console.ReadLine();
-                var query = context.Database.ExecuteSqlRaw("EXEC spUtvaldPersonal @ValdKategori",
-                new SqlParameter("@ValdKategori", chosenWork));
+                Console.WriteLine();
+                //var query = context.Database.ExecuteSqlRaw("EXEC spUtvaldPersonal @ValdKategori",
+                //new SqlParameter("@ValdKategori", chosenWork));
                 ///Call proc with 
+                List<TblPersonal> chooseStaff = context.TblPersonalen.FromSqlRaw($"EXEC spUtvaldPersonal {chosenWork}").ToList();
+                foreach (var item in chooseStaff)
+                {
+                    Console.WriteLine("Namn: " + item.PFörnamn + " " + item.PEfternamn);
+                    Console.WriteLine("Arbete: " + item.PArbete + "\n");
+                }
             }
             LoadingMenu();
         }
@@ -173,8 +187,7 @@ namespace HighSchoolDB
             {
                 Console.WriteLine(item.Elev);
                 Console.WriteLine(item.Kurs);
-                Console.WriteLine(item.Betyg);
-                Console.WriteLine();
+                Console.WriteLine(item.Betyg + "\n");
             }
             LoadingMenu();
         }
@@ -189,8 +202,7 @@ namespace HighSchoolDB
                 Console.WriteLine("Kurs:  " + item.Kurs);
                 Console.WriteLine("Medelbetyg:  " + item.Medelbetyg);
                 Console.WriteLine("Högsta betyg:  " + item.HögstaBetyg);
-                Console.WriteLine("Lägsta betyg:  " + item.LägstaBetyg);
-                Console.WriteLine();
+                Console.WriteLine("Lägsta betyg:  " + item.LägstaBetyg + "\n");
             }
             LoadingMenu();
         }
