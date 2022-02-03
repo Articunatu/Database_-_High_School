@@ -27,13 +27,22 @@ namespace HighSchoolDB
         static void Menu()
         {
             Console.WriteLine("Meny:");
-            Console.WriteLine("\t1. Se personal"); ///SQL
-            Console.WriteLine("\t2. Se elever"); ///VS
-            Console.WriteLine("\t3. Elever för varje klass"); ///VS
-            Console.WriteLine("\t4. Betyg som sats senaste månaden"); ///SQL
-            Console.WriteLine("\t5. Betygsstatistik för varje kurs"); ///SQL
-            Console.WriteLine("\t6. Lägga till elever"); ///SQL
-            Console.WriteLine("\t7. Lägga till personal"); ///VS
+            Console.WriteLine("\t 1. Se personal"); ///SQL
+            Console.WriteLine("\t 2. Se elever"); ///VS
+            Console.WriteLine("\t 3. Elever för varje klass"); ///VS
+            Console.WriteLine("\t 4. Betyg som sats senaste månaden"); ///SQL
+            Console.WriteLine("\t 5. Betygsstatistik för varje kurs"); ///SQL
+            Console.WriteLine("\t 6. Lägga till elever"); ///SQL
+            Console.WriteLine("\t 7. Lägga till personal"); ///VS
+            
+            Console.WriteLine("\n\t 8. Info om personal"); ///SQL
+            Console.WriteLine("\t 9. Info om en elevs betyg"); ///SQL
+            Console.WriteLine("\t10. Antal personer per arbetsroll"); ///VS
+            Console.WriteLine("\t11. Information om alla elever"); ///VS
+            Console.WriteLine("\t12. Aktiva kurser"); ///VS
+            Console.WriteLine("\t13. Medellön per arbetsroll"); ///SQL
+            Console.WriteLine("\t14. All info om en elev"); ///SQL
+            Console.WriteLine("\t15. Sätta betyg på en elev"); ///SQL
 
             int choice = Input();
             switch (choice)
@@ -45,8 +54,25 @@ namespace HighSchoolDB
                 case 5: GradeStatisticsEachCourse(); break;
                 case 6: AddStudents(); break;
                 case 7: AddStaff(); break;
-                default: ViewStaff(); break;
+
+                case 8: StaffInfo(); break;
+                case 9: StudentsCourses(); break;
+                case 10: AmountOfStaff(); break;
+                case 11: EveryStudentInfo(); break;
+                case 12: ActiveCourses(); break;
+                case 13: MonthlySalaries(); break;
+                case 14: OneStudentsInfo(); break;
+                case 15: MonthlySalaries(); break;
+                default: GradeOneStudent(); break;
             }
+        }
+
+        static void LoadingMenu()
+        {
+            Console.ReadKey();
+            Console.Clear();
+
+            Menu();
         }
 
         static int Input()
@@ -211,7 +237,7 @@ namespace HighSchoolDB
         {
             Console.WriteLine("LÄGGA TILL ELEVER: \n");
 
-            Console.Write("Vad är elevns id: ");
+            Console.Write("Vad är elevens id: ");
             int id = Input();
             Console.Write("Vad är elevns förnamn: ");
             string firstName = Console.ReadLine();
@@ -297,12 +323,104 @@ namespace HighSchoolDB
             LoadingMenu();
         }
 
-        static void LoadingMenu()
+        static void StaffInfo()
         {
-            Console.ReadKey();
-            Console.Clear();
 
-            Menu();
+        }
+
+        static void StudentsCourses()
+        {
+
+        }
+
+        static void AmountOfStaff()
+        {
+            Console.WriteLine("ANTAL ANSTÄLLDA PER ARBETE:\n");
+
+            var amtTeacher = from TblPersonal in context.TblPersonalen
+                             where TblPersonal.PArbete == "Lärare"
+                             select TblPersonal;
+
+            var amtPrincipal = from TblPersonal in context.TblPersonalen
+                               where TblPersonal.PArbete == "Rektor"
+                               select TblPersonal;
+
+            var amtAdmin = from TblPersonal in context.TblPersonalen
+                           where TblPersonal.PArbete == "Administratör"
+                           select TblPersonal;
+
+            var amtNurse = from TblPersonal in context.TblPersonalen
+                           where TblPersonal.PArbete == "Skolsköterska"
+                           select TblPersonal;
+
+            var amtSCC = from TblPersonal in context.TblPersonalen
+                         where TblPersonal.PArbete == "SYV"
+                         select TblPersonal;
+
+            Console.WriteLine("Lärare: " + amtTeacher.Count());
+            Console.WriteLine("Rektorer: " + amtPrincipal.Count());
+            Console.WriteLine("Administratörer: " + amtAdmin.Count());
+            Console.WriteLine("Skolsköterskor: " + amtNurse.Count());
+            Console.WriteLine("Studievägledare: " + amtSCC.Count());
+
+            LoadingMenu();
+        }
+
+        static void EveryStudentInfo()
+        {
+            Console.WriteLine("ALLA ELEVER:\n");
+            var studentsInfo = context.TblEleverna.Join(
+                context.TblKlasserna,
+                studentClasses => studentClasses.EKlassId,
+                classes => classes.KlId,
+                (studentClasses, classes) => new { Student = studentClasses.EFörnamn + " " + studentClasses.EEfternamn,
+                    Class = classes.KlKlassNamn }
+                ).ToList();
+              
+
+            foreach (var item in studentsInfo)
+            {
+                Console.WriteLine("Elev: " + item.Student);
+                Console.WriteLine("Klass: " + item.Class + "\n");
+            }
+
+            LoadingMenu();
+        }
+
+        static void ActiveCourses()
+        {
+            Console.WriteLine("AKTIVA KURSER:\n");
+            var activeCourses = context.TblEleverKurserna.Join(
+                context.TblKurserna,
+                stCou => stCou.EkKursId,
+                courses => courses.KId,
+                (stCourses, courses) => new { Course = courses.KNamn, Grade = stCourses.EkBetyg }
+                ).Distinct().ToList();
+
+            foreach (var item in activeCourses)
+            {
+                if (item.Grade == "-")
+                {
+                    Console.WriteLine(item.Course);
+                }
+            }
+
+            LoadingMenu();
+        }
+
+        static void MonthlySalaries()
+        {
+            //var monthlySalaries = from 
+        }
+
+        static void OneStudentsInfo()
+        {
+
+        }
+
+        static void GradeOneStudent()
+        {
+
         }
     }
 }

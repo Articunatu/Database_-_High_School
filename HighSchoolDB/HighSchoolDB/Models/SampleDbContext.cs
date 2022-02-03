@@ -20,7 +20,7 @@ namespace HighSchoolDB.Models
         {
         }
 
-        public virtual DbSet<MedelBetyg> MedelBetyg { get; set; }
+        public virtual DbSet<VwMedelBetyg> MedelBetyg { get; set; }
         public virtual DbSet<TblBetyg> TblBetygen { get; set; }
         public virtual DbSet<TblElever> TblEleverna { get; set; }
         public virtual DbSet<TblEleverKurser> TblEleverKurserna { get; set; }
@@ -43,7 +43,7 @@ namespace HighSchoolDB.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<MedelBetyg>(entity =>
+            modelBuilder.Entity<VwMedelBetyg>(entity =>
             {
                 entity.HasNoKey();
 

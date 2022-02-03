@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace HighSchoolDB.Models
 {
-    public partial class MedelBetyg
+    public partial class VwMedelBetyg
     {
         public double? Medelbetyg1 { get; set; }
     }
