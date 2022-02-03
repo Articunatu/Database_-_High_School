@@ -1,3 +1,4 @@
+
 Use HighSchool
 
 select (P_Förnamn + char(9) + P_Efternamn) as 'Personal', P_Arbete as 'Arbetsroll' from tblPersonal_
@@ -17,8 +18,9 @@ where DATEDIFF(DAY, EK_BetygDatum, GETDATE()) <= 31;
 
 GO
 
-create proc spUtvaldPersonal
+alter proc spUtvaldPersonal
 @ValdKategori varchar(20)
+with encryption
 as 
 if (@ValdKategori = 'Inget')
 begin
@@ -35,9 +37,9 @@ exec spUtvaldPersonal 'SYV'
 
 GO
 
-create view vwMånadensBetyg
+alter view vwMånadensBetyg
 as
-select (E_Förnamn + char(9) + E_Efternamn) as 'Elev',  (K_Namn) as 'Kurs', (B_Bokstav) as 'Betyg' from tblEleverKurser
+select (E_Förnamn + char(9) + E_Efternamn) as 'Elev',  (K_Namn) as 'Kurs', (B_Bokstav) as 'Betyg', EK_BetygDatum from tblEleverKurser
 join tblElever on E_ID = EK_ElevID
 join tblKurser on K_ID = EK_KursID
 join tblBetyg on B_Bokstav = EK_Betyg
@@ -88,13 +90,23 @@ GO
 
 select * from vwBetygStatistik
 
-select (E_Förnamn + char(9) + E_Efternamn) as 'Elev',  (P_Förnamn + char(9) + P_Efternamn) as 'Lärare', (K_Namn) as 'Kurs'  from tblEleverKurser
+go
+
+create proc spElevsAvslutadeKurser
+@ElevID int
+as begin
+select K_Namn as 'Kurs', EK_Betyg as 'Betyg',
+(P_Förnamn + char(9) + P_Efternamn) as 'Lärare', (EK_BetygDatum) as 'Datum'  from tblEleverKurser
 join tblElever on EK_ElevID = E_ID 
 join tblKurser on EK_KursID = K_ID
 join tblKurserPersonal on EK_KursID = KP_KursID
 join  tblPersonal_ on KP_PersonalID = P_ID
-where E_Förnamn = 'Gordon'
-order by K_Namn
+where EK_Betyg != '-' and
+E_ID = 1
+order by K_Namn 
+end 
+
+exec spElevsAvslutadeKurser 2
 
 select (E_Förnamn + char(9) + E_Efternamn) as 'Elev', K_Namn as 'Kurs', EK_Betyg as 'Betyg' from tblEleverKurser
 join tblElever on EK_ElevID = E_ID
@@ -115,7 +127,57 @@ END
 
 GO
 
-exec spSkapaElever 100, 'Jens', 'Hult', '20040101-1551', 9
+exec spSkapaElever 121, 'Anders', 'Holm', '20050101-1551', 10
+
+go
+
+alter view vwPersonalInfo 
+as
+select (P_Förnamn + ' '+ P_Efternamn) as 'Personal', P_Arbete as 'Arbete', P_ÅrAvArbete as 'År på skolan' from tblPersonal_
+
+select * from vwPersonalInfo
+
+GO
+
+create proc spSkapaPersonal
+@PersID int, @PersFörnamn varchar(20), @PersEfternamn varchar(20), @PersArbete varchar(20), @PersÅr int, @PersLön int
+as begin
+insert into tblPersonal_
+(P_ID, P_Förnamn, P_Efternamn, P_Arbete, P_ÅrAvArbete, P_Lön)
+values
+(@PersID, @PersFörnamn, @PersEfternamn, @PersArbete, @PersÅr, @PersLön)
+END
+
+GO
+
+alter view vwPersonalMedellön
+as
+select P_Arbete as 'Avdelning', AVG(P_Lön) as 'Medellön' from tblPersonal_
+group by P_Arbete 
+
+select Avdelning, Round(Medellön, 0) from vwPersonalMedellön
+
+go
+
+
+create proc spEleverInfo
+@ElevID int
+as begin
+select (E_Förnamn + ' ' + E_Efternamn) as 'Elev', E_Personnummer as 'Personnummer' from tblElever
+end
+
+go
+
+create proc spBetygSättning
+@ElevID int, @ElevKursID int, @ElevBetyg char
+as 
+begin try
+ begin transaction 
+  update tblEleverKurser set EK_Betyg = @ElevBetyg 
+  where EK_ElevID = @ElevID and EK_KursID = @ElevKursID
+ commit transaction
+Print 'Betyget har satts!'
+end try
 
 --begin try
 --  begin transaction
@@ -129,3 +191,11 @@ exec spSkapaElever 100, 'Jens', 'Hult', '20040101-1551', 9
 --rollback transaction 
 --print 'transaction rolled back'
 --end catch
+
+/*Distinct join
+--select a.FirstName, a.LastName, v.District
+--from AddTbl a 
+--inner join (select distinct LastName, District 
+--    from ValTbl) v
+--   on a.LastName = v.LastName
+--order by Firstname  
