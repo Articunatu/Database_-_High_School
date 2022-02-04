@@ -174,7 +174,7 @@ join tblDepartment on T_DepartmentID = D_ID
 join tblEmployees on T_ID = E_ID
 group by D_Name 
 
-select Avdelning, Round(Medellön, 0) from vwStaffAvgSalary
+select Avdelning, Round(Medellön, 0) as 'Medellön' from vwStaffAvgSalary
 
 go
 
@@ -220,7 +220,7 @@ join tblStudents on SC_StudentID = S_ID
 join tblCourses on SC_CourseID = C_ID
 join tblTeachersCourses on SC_CourseID = TC_CourseID
 join  tblEmployees on TC_TeacherID = E_ID
-where SC_Grade != '-' and
+where SC_Grade != '-' and TC_IsGrader = 0 and
 S_ID = 1
 order by C_Name asc
 
@@ -228,7 +228,7 @@ select * from vwFinishedCourses
 select C_Name, E_FirstName, E_LastName from tblTeachersCourses
 join tblCourses on TC_CourseID = C_ID
 join tblEmployees on TC_TeacherID = E_ID
-order by C_Name
+order by TC_ID
 /*Distinct join
 --select a.FirstName, a.LastName, v.District
 --from AddTbl a 
