@@ -110,15 +110,15 @@ go
 create proc spFinishedCourses
 @StudentID int
 as begin
-select distinct C_Name as 'Kurs', SC_Grade as 'Betyg',
+select C_Name as 'Kurs', SC_Grade as 'Betyg',
 (E_FirstName + char(9) + E_LastName) as 'Lärare', (SC_DateOfGrade) as 'Datum'  from tblStudentsCourses
 join tblStudents on SC_StudentID = S_ID 
 join tblCourses on SC_CourseID = C_ID
 join tblTeachersCourses on SC_CourseID = TC_CourseID
 join  tblEmployees on TC_TeacherID = E_ID
 where SC_Grade != '-' and
-S_ID = 1
-order by C_Name 
+S_ID = 1 and TC_IsGrader = 0
+order by SC_ID
 end 
 
 select distinct C_Name from tblCourses 
@@ -187,30 +187,28 @@ end
 
 go
 
-create proc spGrading
+alter proc spGrading
 @StudentID int, @StudentCourseID int, @StudentGrade char
 as 
 begin try
  begin transaction 
   update tblStudentsCourses set SC_Grade = @StudentGrade 
   where SC_StudentID = @StudentID and SC_CourseID = @StudentCourseID
+  update tblStudentsCourses set SC_DateOfGrade = GETDATE()
+  where SC_StudentID = @StudentID and SC_CourseID = @StudentCourseID
  commit transaction
 Print 'Betyget har satts!'
 end try
+begin catch
+rollback
+print 'Betygsättningen togs tillbaka!'
+end catch
 
 go
---begin try
---  begin transaction
---    update tblPerson set Salary = 45000 where Age > 30
---	  update tblPerson set City = 'Stockholm' where City = 'Borås'
---	  commit transaction
---	Print 'Transaction commited'
---end try
 
---begin catch
---rollback transaction 
---print 'transaction rolled back'
---end catch
+exec spGrading 1, 3, C
+
+go
 
 create view vwFinishedCourses
 as
@@ -222,17 +220,46 @@ join tblTeachersCourses on SC_CourseID = TC_CourseID
 join  tblEmployees on TC_TeacherID = E_ID
 where SC_Grade != '-' and TC_IsGrader = 0 and
 S_ID = 1
-order by C_Name asc
+order by SC_ID asc
 
 select * from vwFinishedCourses
 select C_Name, E_FirstName, E_LastName from tblTeachersCourses
 join tblCourses on TC_CourseID = C_ID
 join tblEmployees on TC_TeacherID = E_ID
 order by TC_ID
-/*Distinct join
---select a.FirstName, a.LastName, v.District
---from AddTbl a 
---inner join (select distinct LastName, District 
---    from ValTbl) v
---   on a.LastName = v.LastName
---order by Firstname  
+
+GO
+
+--create proc spExtraStudentInfo
+--as begin
+--select Cl_Name as 'Klass',  from tblStudentsCourses
+--join tblStudents on S_ID = SC_StudentID
+--join tblClasses on S_ClassID = Cl_ID
+--join tblTeachersCourses on SC_CourseID = TC_CourseID
+--join tblEmployees on TC_TeacherID
+
+--create view vwTeachersPrograms
+--as
+--select (E_FirstName +' '+ E_LastName) as Lärare, Cl from tblEmployees
+--join tblTeachers on T_ID = E_ID
+--join tblClasses on T_ClassID = Cl_ID
+
+create view vwAverageGrades
+as
+select C_Name as 'Kurs', Round(AVG(G_Value), 2) as 'Medelbetyg' from tblStudentsCourses
+join tblGrades on SC_Grade = G_Letter
+join tblStudents on SC_StudentID = S_ID
+join tblCourses on SC_StudentID = 1
+where G_Letter != '-'
+group by C_Name
+
+select top 50 percent (C_Name) as Kurs, Round(AVG(G_Value), 2) as 'Medelbetyg', MIN(G_Value) as 'Lägsta betyg', 
+MAX(G_Value) as 'Högsta betyg' from tblStudentsCourses
+join tblGrades on G_Letter = SC_Grade
+join tblCourses on C_ID = SC_CourseID
+group by C_Name
+
+alter table tblStudents
+check ()
+
+
