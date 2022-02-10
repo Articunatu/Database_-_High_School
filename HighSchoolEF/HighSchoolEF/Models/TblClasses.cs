@@ -15,7 +15,7 @@ namespace HighSchoolEF.Models
             TblTeacher = new HashSet<TblTeacher>();
         }
 
-        public double ClId { get; set; }
+        public int ClId { get; set; }
         public string ClName { get; set; }
 
         public virtual ICollection<TblStudents> TblStudents { get; set; }

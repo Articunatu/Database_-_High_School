@@ -9,12 +9,12 @@ namespace HighSchoolEF.Models
 {
     public partial class TblEmployees
     {
-        public double EId { get; set; }
+        public int EId { get; set; }
         public string EFirstName { get; set; }
         public string ELastName { get; set; }
         public string EJob { get; set; }
         public int? EYearsOfWork { get; set; }
-        public decimal? ESalary { get; set; }
+        public double? ESalary { get; set; }
 
         public virtual TblTeacher TblTeacher { get; set; }
     }

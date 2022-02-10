@@ -28,9 +28,11 @@ namespace HighSchoolEF.Models
         public virtual DbSet<TblStudents> TblStudents { get; set; }
         public virtual DbSet<TblTeacher> TblTeacher { get; set; }
         public virtual DbSet<TblTeacherCourses> TblTeacherCourses { get; set; }
+        public virtual DbSet<VwClassesStudentsGrades> VwClassesStudentsGrades { get; set; }
         public virtual DbSet<VwEmployeesInfo> VwEmployeesInfo { get; set; }
         public virtual DbSet<VwGradeStatistics> VwGradeStatistics { get; set; }
         public virtual DbSet<VwMonthlyGrades> VwMonthlyGrades { get; set; }
+        public virtual DbSet<VwPaymentDepartment> VwPaymentDepartment { get; set; }
         public virtual DbSet<VwStaffAvgSalary> VwStaffAvgSalary { get; set; }
         public virtual DbSet<VwValueStatistics> VwValueStatistics { get; set; }
 
@@ -39,7 +41,7 @@ namespace HighSchoolEF.Models
             if (!optionsBuilder.IsConfigured)
             {
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-                optionsBuilder.UseSqlServer("Data Source=LAPTOP-PUKB477F;Initial Catalog=HighSchoolDB;Integrated Security=True;");
+                optionsBuilder.UseSqlServer("Data Source=LAPTOP-PUKB477F ;Initial Catalog=HighSchoolDB ;Integrated Security=True;");
             }
         }
 
@@ -52,11 +54,15 @@ namespace HighSchoolEF.Models
 
                 entity.ToTable("tblClasses");
 
-                entity.Property(e => e.ClId).HasColumnName("Cl_ID");
+                entity.Property(e => e.ClId)
+                    .HasColumnName("Cl_ID")
+                    .ValueGeneratedNever();
 
                 entity.Property(e => e.ClName)
+                    .IsRequired()
                     .HasColumnName("Cl_Name")
-                    .HasMaxLength(255);
+                    .HasMaxLength(20)
+                    .IsUnicode(false);
             });
 
             modelBuilder.Entity<TblCourses>(entity =>
@@ -66,12 +72,15 @@ namespace HighSchoolEF.Models
 
                 entity.ToTable("tblCourses");
 
-                entity.Property(e => e.CId).HasColumnName("C_ID");
+                entity.Property(e => e.CId)
+                    .HasColumnName("C_ID")
+                    .ValueGeneratedNever();
 
                 entity.Property(e => e.CName)
                     .IsRequired()
                     .HasColumnName("C_Name")
-                    .HasMaxLength(255);
+                    .HasMaxLength(20)
+                    .IsUnicode(false);
 
                 entity.Property(e => e.CPoints).HasColumnName("C_Points");
             });
@@ -100,23 +109,29 @@ namespace HighSchoolEF.Models
 
                 entity.ToTable("tblEmployees");
 
-                entity.Property(e => e.EId).HasColumnName("E_ID");
+                entity.Property(e => e.EId)
+                    .HasColumnName("E_ID")
+                    .ValueGeneratedNever();
 
                 entity.Property(e => e.EFirstName)
+                    .IsRequired()
                     .HasColumnName("E_FirstName")
-                    .HasMaxLength(255);
+                    .HasMaxLength(20)
+                    .IsUnicode(false);
 
                 entity.Property(e => e.EJob)
+                    .IsRequired()
                     .HasColumnName("E_Job")
-                    .HasMaxLength(255);
+                    .HasMaxLength(20)
+                    .IsUnicode(false);
 
                 entity.Property(e => e.ELastName)
+                    .IsRequired()
                     .HasColumnName("E_LastName")
-                    .HasMaxLength(255);
+                    .HasMaxLength(20)
+                    .IsUnicode(false);
 
-                entity.Property(e => e.ESalary)
-                    .HasColumnName("E_Salary")
-                    .HasColumnType("decimal(18, 0)");
+                entity.Property(e => e.ESalary).HasColumnName("E_Salary");
 
                 entity.Property(e => e.EYearsOfWork).HasColumnName("E_YearsOfWork");
             });
@@ -130,7 +145,9 @@ namespace HighSchoolEF.Models
 
                 entity.Property(e => e.GLetter)
                     .HasColumnName("G_Letter")
-                    .HasMaxLength(255);
+                    .HasMaxLength(1)
+                    .IsUnicode(false)
+                    .IsFixedLength();
 
                 entity.Property(e => e.GValue).HasColumnName("G_Value");
             });
@@ -142,17 +159,22 @@ namespace HighSchoolEF.Models
 
                 entity.ToTable("tblStudentCourses");
 
-                entity.Property(e => e.ScId).HasColumnName("SC_ID");
+                entity.Property(e => e.ScId)
+                    .HasColumnName("SC_ID")
+                    .ValueGeneratedNever();
 
                 entity.Property(e => e.ScCourseId).HasColumnName("SC_CourseID");
 
                 entity.Property(e => e.ScDate)
                     .HasColumnName("SC_Date")
-                    .HasMaxLength(255);
+                    .HasMaxLength(20)
+                    .IsUnicode(false);
 
                 entity.Property(e => e.ScGrade)
                     .HasColumnName("SC_Grade")
-                    .HasMaxLength(255);
+                    .HasMaxLength(1)
+                    .IsUnicode(false)
+                    .IsFixedLength();
 
                 entity.Property(e => e.ScStudentId).HasColumnName("SC_StudentID");
 
@@ -181,22 +203,27 @@ namespace HighSchoolEF.Models
 
                 entity.ToTable("tblStudents");
 
-                entity.Property(e => e.SId).HasColumnName("S_ID");
+                entity.Property(e => e.SId)
+                    .HasColumnName("S_ID")
+                    .ValueGeneratedNever();
 
                 entity.Property(e => e.SClassId).HasColumnName("S_ClassID");
 
                 entity.Property(e => e.SFirstName)
                     .HasColumnName("S_FirstName")
-                    .HasMaxLength(255);
+                    .HasMaxLength(20)
+                    .IsUnicode(false);
 
                 entity.Property(e => e.SLastName)
                     .HasColumnName("S_LastName")
-                    .HasMaxLength(255);
+                    .HasMaxLength(20)
+                    .IsUnicode(false);
 
                 entity.Property(e => e.SSecurityNumber)
                     .IsRequired()
                     .HasColumnName("S_SecurityNumber")
-                    .HasMaxLength(255);
+                    .HasMaxLength(20)
+                    .IsUnicode(false);
 
                 entity.HasOne(d => d.SClass)
                     .WithMany(p => p.TblStudents)
@@ -211,7 +238,9 @@ namespace HighSchoolEF.Models
 
                 entity.ToTable("tblTeacher");
 
-                entity.Property(e => e.TId).HasColumnName("T_ID");
+                entity.Property(e => e.TId)
+                    .HasColumnName("T_ID")
+                    .ValueGeneratedNever();
 
                 entity.Property(e => e.TClassId).HasColumnName("T_ClassID");
 
@@ -242,7 +271,9 @@ namespace HighSchoolEF.Models
 
                 entity.ToTable("tblTeacherCourses");
 
-                entity.Property(e => e.TcId).HasColumnName("TC_ID");
+                entity.Property(e => e.TcId)
+                    .HasColumnName("TC_ID")
+                    .ValueGeneratedNever();
 
                 entity.Property(e => e.TcCourseId).HasColumnName("TC_CourseID");
 
@@ -261,6 +292,27 @@ namespace HighSchoolEF.Models
                     .HasForeignKey(d => d.TcTeacherId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_tblKurserPersonal_tblLärare");
+            });
+
+            modelBuilder.Entity<VwClassesStudentsGrades>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToView("vwClassesStudentsGrades");
+
+                entity.Property(e => e.Betyg).HasMaxLength(255);
+
+                entity.Property(e => e.Datum).HasMaxLength(255);
+
+                entity.Property(e => e.Elev).HasMaxLength(511);
+
+                entity.Property(e => e.Klass).HasMaxLength(255);
+
+                entity.Property(e => e.Kurs)
+                    .IsRequired()
+                    .HasMaxLength(255);
+
+                entity.Property(e => e.Lärare).HasMaxLength(511);
             });
 
             modelBuilder.Entity<VwEmployeesInfo>(entity =>
@@ -321,6 +373,20 @@ namespace HighSchoolEF.Models
                 entity.Property(e => e.Kurs)
                     .IsRequired()
                     .HasMaxLength(255);
+            });
+
+            modelBuilder.Entity<VwPaymentDepartment>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToView("vwPaymentDepartment");
+
+                entity.Property(e => e.Avdelning)
+                    .IsRequired()
+                    .HasMaxLength(20)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Utbetalning).HasColumnType("decimal(38, 0)");
             });
 
             modelBuilder.Entity<VwStaffAvgSalary>(entity =>

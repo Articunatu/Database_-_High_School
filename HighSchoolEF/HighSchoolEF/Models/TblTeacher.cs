@@ -14,8 +14,8 @@ namespace HighSchoolEF.Models
             TblTeacherCourses = new HashSet<TblTeacherCourses>();
         }
 
-        public double TId { get; set; }
-        public double? TClassId { get; set; }
+        public int TId { get; set; }
+        public int? TClassId { get; set; }
         public int TDepartmentId { get; set; }
 
         public virtual TblEmployees T { get; set; }

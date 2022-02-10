@@ -9,9 +9,9 @@ namespace HighSchoolEF.Models
 {
     public partial class TblStudentCourses
     {
-        public double ScId { get; set; }
-        public double ScStudentId { get; set; }
-        public double ScCourseId { get; set; }
+        public int ScId { get; set; }
+        public int ScStudentId { get; set; }
+        public int ScCourseId { get; set; }
         public string ScGrade { get; set; }
         public string ScDate { get; set; }
 

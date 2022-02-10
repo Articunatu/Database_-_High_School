@@ -15,7 +15,7 @@ namespace HighSchoolEF.Models
             TblTeacherCourses = new HashSet<TblTeacherCourses>();
         }
 
-        public double CId { get; set; }
+        public int CId { get; set; }
         public string CName { get; set; }
         public int CPoints { get; set; }
 

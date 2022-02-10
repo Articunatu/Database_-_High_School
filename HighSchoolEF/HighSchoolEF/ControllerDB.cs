@@ -104,7 +104,7 @@ namespace HighSchoolDB
             if (answer == "ja")
             {
                 ///Call view for all staff
-                List<TblEmployees> chooseStaff = context.TblEmployees.FromSqlRaw($"EXEC spUtvaldPersonal Inget").ToList();
+                List<TblEmployees> chooseStaff = context.TblEmployees.FromSqlRaw($"EXEC spChosenStaff Inget").ToList();
                 Console.WriteLine();
                 foreach (var item in chooseStaff)
                 {
@@ -120,7 +120,7 @@ namespace HighSchoolDB
                 //var query = context.Database.ExecuteSqlRaw("EXEC spUtvaldPersonal @ValdKategori",
                 //new SqlParameter("@ValdKategori", chosenWork));
                 ///Call proc with 
-                List<TblEmployees> chooseStaff = context.TblEmployees.FromSqlRaw($"EXEC spUtvaldPersonal {chosenWork}").ToList();
+                List<TblEmployees> chooseStaff = context.TblEmployees.FromSqlRaw($"EXEC spChosenStaff {chosenWork}").ToList();
                 foreach (var item in chooseStaff)
                 {
                     Console.WriteLine("Namn: " + item.EFirstName + " " + item.ELastName);
@@ -248,7 +248,7 @@ namespace HighSchoolDB
             Console.Write("Vad är elevns klassid: ");
             int classId = Input();
 
-            context.Database.ExecuteSqlRaw("EXEC spSkapaElever @ElevID, @ElevFörnamn, @ElevEfternamn, @ElevPersonnummer, @ElevKlassID",
+            context.Database.ExecuteSqlRaw("EXEC spAddStudents @ElevID, @ElevFörnamn, @ElevEfternamn, @ElevPersonnummer, @ElevKlassID",
                 new SqlParameter("@ElevID", id),
                 new SqlParameter("@ElevFörnamn", firstName),
                 new SqlParameter("@ElevEfternamn", lastName),
@@ -338,7 +338,7 @@ namespace HighSchoolDB
 
         static void StudentsCourses()
         {
-            
+
         }
 
         static void AmountOfStaff()

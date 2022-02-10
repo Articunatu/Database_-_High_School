@@ -14,11 +14,11 @@ namespace HighSchoolEF.Models
             TblStudentCourses = new HashSet<TblStudentCourses>();
         }
 
-        public double SId { get; set; }
+        public int SId { get; set; }
         public string SFirstName { get; set; }
         public string SLastName { get; set; }
         public string SSecurityNumber { get; set; }
-        public double? SClassId { get; set; }
+        public int? SClassId { get; set; }
 
         public virtual TblClasses SClass { get; set; }
         public virtual ICollection<TblStudentCourses> TblStudentCourses { get; set; }

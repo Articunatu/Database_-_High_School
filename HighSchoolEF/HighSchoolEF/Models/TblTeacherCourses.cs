@@ -9,10 +9,10 @@ namespace HighSchoolEF.Models
 {
     public partial class TblTeacherCourses
     {
-        public double TcId { get; set; }
-        public double TcCourseId { get; set; }
+        public int TcId { get; set; }
+        public int TcCourseId { get; set; }
         public int TcIsGrader { get; set; }
-        public double TcTeacherId { get; set; }
+        public int TcTeacherId { get; set; }
 
         public virtual TblCourses TcCourse { get; set; }
         public virtual TblTeacher TcTeacher { get; set; }
