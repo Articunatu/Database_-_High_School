@@ -2,7 +2,6 @@
 
 Use HighSchoolDB
 
-
 drop proc spElevsAvslutadeKurser, spSkapaElever, spUtvaldPersonal
 drop view vwBetygStatistik, vwMånadensBetyg, vwPersonalInfo, vwPersonalMedellön
 
@@ -181,7 +180,6 @@ select * from vwStaffAvgSalary
 
 go
 
-
 alter proc spStudentsInfo
 @StudentID int
 as begin
@@ -258,12 +256,50 @@ GO
 
 create view vwAverageGrades
 as
-select C_Name as 'Kurs', Round(AVG(G_Value), 2) as 'Medelbetyg' from tblStudentCourses
+select C_Name as 'Kurs', Round(AVG(G_Value), 2) as 'Medelbetyg' from tblStudents
+join tblStudentCourses as One on S_ID = One.SC_StudentID 
+join tblCourses on One.SC_CourseID = C_ID
+join tblStudentCourses as Two on C_ID = Two.SC_CourseID
+join tblGrades on Two.SC_Grade = G_Letter
+where G_Letter != '-' AND One.SC_StudentID = 1
+group by C_Name
+
+go
+
+create view GirlsGrades
+as
+select C_Name as 'Kurs', (Round(AVG(G_Value), 2) )as 'Medelbetyg' from tblStudentCourses
+join tblCourses on SC_CourseID = C_ID
 join tblGrades on SC_Grade = G_Letter
 join tblStudents on SC_StudentID = S_ID
-join tblCourses on SC_CourseID = C_ID AND SC_StudentID = 1
-where G_Letter != '-' AND SC_StudentID = S_ID
+where G_Letter != '-' and convert(int, SUBSTRING(S_SecurityNumber, 9, 1))%2=0
 group by C_Name
+
+go
+
+create view BoysGrades
+as
+select C_Name as 'Kurs', (Round(AVG(G_Value), 2) )as 'Medelbetyg' from tblStudentCourses
+join tblCourses on SC_CourseID = C_ID
+join tblGrades on SC_Grade = G_Letter
+join tblStudents on SC_StudentID = S_ID
+where G_Letter != '-' and convert(int, SUBSTRING(S_SecurityNumber, 10, 1))%2 != 0
+group by C_Name
+
+go
+
+select S_FirstName + ' ' + S_LastName as 'Elev', G_Value as 'Betyg' from tblStudentCourses
+join tblCourses on SC_CourseID = C_ID
+join tblGrades on SC_Grade = G_Letter
+join tblStudents on SC_StudentID = S_ID
+where G_Letter != '-' and convert(int, SUBSTRING(S_SecurityNumber, 10, 1))%2 != 0  and C_Name = 'Matematik 5'
+
+select C_Name as 'Kurs', Round(AVG(G_Value), 2) as 'Medelbetyg' from tblStudents
+join tblStudentCourses on S_ID = SC_StudentID
+join tblCourses on SC_CourseID = C_ID
+join tblGrades on SC_Grade = G_Letter
+
+go
 
 select * from tblStudents
 join tblStudentCourses on S_ID = SC_StudentID
@@ -296,6 +332,19 @@ join tblEmployees on TC_TeacherID = E_ID
 
 go
 
+alter view vwPaymentDepartment
+as
+select D_Name as 'Avdelning', sum(E_Salary) as 'Utbetalning' from tblEmployees
+join tblTeacher on E_ID = T_ID
+join tblDepartment on T_DepartmentID = D_ID
+group by D_Name
+
+go
+
+select * from vwPaymentDepartment
+
+go
+
 select S_FirstName+' '+S_LastName as Namn, Cl_Name as Klass, E_FirstName+' ' +E_LastName as Lärare, C_Name
 from tblStudents
 join tblClasses on S_ClassID = Cl_ID
@@ -308,11 +357,26 @@ order by C_Name asc
 
 GO
 
-ALTER TABLE tblStudents
+ALTER TABLE tblStudents 
 ALTER COLUMN S_SecurityNumber 
  Add Constraint check_Month
   Check(Select Substring(S_SecurityNumber, 2, 2) < 13 from tblStudents)
-  Add Constraint check_Day
-  Check(Select Substring(S_SecurityNumber, 4, 2).To < 32 from tblStudents) 
-  Add Constraint check_Line
-  Check(Select Substring(S_SecurityNumber, 6, 1) = '-' from tblStudents) 
+  )
+
+go
+
+create view vwClassesStudentsGrades
+as
+select (S_FirstName + ' ' + S_LastName) as 'Elev', Cl_Name as 'Klass' ,C_Name as 'Kurs', SC_Grade as 'Betyg',
+(E_FirstName + char(9) + E_LastName) as 'Lärare', (SC_Date) as 'Datum'  from tblStudentCourses
+join tblStudents on SC_StudentID = S_ID 
+join tblCourses on SC_CourseID = C_ID
+join tblTeacherCourses on SC_CourseID = TC_CourseID
+join tblEmployees on TC_TeacherID = E_ID
+join tblClasses on S_ClassID = Cl_ID
+where SC_Grade != '-' and TC_IsGrader = 0
+
+select * from vwClassesStudentsGrades
+where Elev = 'Gordon Sanders'
+order by Kurs asc
+  
