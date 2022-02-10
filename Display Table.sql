@@ -1,5 +1,7 @@
 
+
 Use HighSchoolDB
+
 
 drop proc spElevsAvslutadeKurser, spSkapaElever, spUtvaldPersonal
 drop view vwBetygStatistik, vwMånadensBetyg, vwPersonalInfo, vwPersonalMedellön
@@ -23,22 +25,21 @@ where DATEDIFF(DAY, SC_Date, GETDATE()) <= 31;
 
 GO
 
-create proc spChosenStaff
+alter proc spChosenStaff
 @ChosenJob varchar(20)
-with encryption
 as 
 if (@ChosenJob = 'Inget')
 begin
-select E_ID, E_FirstName, E_LastName, E_Job  from tblEmployees
+select  E_FirstName +' '+ E_LastName as 'Personal', E_Job as 'Arbete'  from tblEmployees
 end
 else
 begin
-select E_ID, E_FirstName, E_LastName, E_Job  from tblEmployees
+select  E_FirstName +' '+ E_LastName as 'Personal', E_Job as 'Arbete'  from tblEmployees
 where E_Job = @ChosenJob 
 END
 
 drop proc spChosenStaff
-exec spChosenStaff 'SYV'  
+exec spChosenStaff 'Inget'  
 
 GO
 
@@ -116,7 +117,7 @@ select C_Name as 'Kurs', SC_Grade as 'Betyg',
 (E_FirstName + char(9) + E_LastName) as 'Lärare', (SC_Date) as 'Datum'  from tblStudentCourses
 join tblStudents on SC_StudentID = S_ID 
 join tblCourses on SC_CourseID = C_ID
-join tblTeachersCourses on SC_CourseID = TC_CourseID
+join tblTeacherCourses on SC_CourseID = TC_CourseID
 join  tblEmployees on TC_TeacherID = E_ID
 where SC_Grade != '-' and
 S_ID = 1 and TC_IsGrader = 0
@@ -125,9 +126,9 @@ end
 
 select distinct C_Name from tblCourses 
 
-exec spFinispFinishedCourses2
+exec  spFinishedCourses 1
 
-select (S_FirstName + char(9) + S_LastName) as 'Elev', C_Name as 'Kurs', SC_Grade as 'Betyg' from tblStudentsCourses
+select (S_FirstName + char(9) + S_LastName) as 'Elev', C_Name as 'Kurs', SC_Grade as 'Betyg' from tblStudentCourses
 join tblStudents on SC_StudentID = S_ID
 join tblCourses on SC_CourseID = C_ID
 where S_ClassID = 5
@@ -154,7 +155,7 @@ create view vwEmployeesInfo
 as
 select (E_FirstName + ' '+ E_LastName) as 'Personal', E_Job as 'Arbete', E_YearsOfWork as 'År på skolan' from tblEmployees
 
-select * from vwPersonalInfo
+select * from vwEmployeesInfo
 
 GO
 
@@ -169,34 +170,37 @@ END
 
 GO
 
-create view vwStaffAvgSalary
+alter view vwStaffAvgSalary
 as
-select D_Name as 'Avdelning', AVG(E_Salary) as 'Medellön' from tblTeacher
+select D_Name as 'Avdelning', Round(AVG(E_Salary), 0) as 'Medellön' from tblTeacher
 join tblDepartment on T_DepartmentID = D_ID
 join tblEmployees on T_ID = E_ID
 group by D_Name 
 
-select Avdelning, Round(Medellön, 0) as 'Medellön' from vwStaffAvgSalary
+select * from vwStaffAvgSalary
 
 go
 
 
-create proc spStudentsInfo
+alter proc spStudentsInfo
 @StudentID int
 as begin
 select (S_FirstName + ' ' + S_LastName) as 'Elev', S_SecurityNumber as 'Personnummer' from tblStudents
+where S_ID = @StudentID
 end
+
+exec spStudentsInfo 1
 
 go
 
-create proc spGrading
+alter proc spGrading
 @StudentID int, @StudentCourseID int, @StudentGrade char
 as 
 begin try
  begin transaction 
-  update tblStudentsCourses set SC_Grade = @StudentGrade 
+  update tblStudentCourses set SC_Grade = @StudentGrade 
   where SC_StudentID = @StudentID and SC_CourseID = @StudentCourseID
-  update tblStudentsCourses set SC_DateOfGrade = GETDATE()
+  update tblStudentCourses set SC_Date = GETDATE()
   where SC_StudentID = @StudentID and SC_CourseID = @StudentCourseID
  commit transaction
 Print 'Betyget har satts!'
@@ -212,24 +216,26 @@ exec spGrading 1, 3, C
 
 go
 
-create proc spFinishedCourses
+alter proc spFinishedCourses
 @StudentID int
 as begin
 select C_Name as 'Kurs', SC_Grade as 'Betyg',
-(E_FirstName + char(9) + E_LastName) as 'Lärare', (SC_DateOfGrade) as 'Datum'  from tblStudentsCourses
+(E_FirstName + char(9) + E_LastName) as 'Lärare', (SC_Date) as 'Datum'  from tblStudentCourses
 join tblStudents on SC_StudentID = S_ID 
 join tblCourses on SC_CourseID = C_ID
-join tblTeachersCourses on SC_CourseID = TC_CourseID
+join tblTeacherCourses on SC_CourseID = TC_CourseID
 join  tblEmployees on TC_TeacherID = E_ID
 where SC_Grade != '-' and TC_IsGrader = 0 and
-S_ID = @StudentID
-order by SC_ID asc
+S_ID = 1
+order by SC_ID
 end
 
 go
 
 exec spFinishedCourses 1
-select C_Name, E_FirstName, E_LastName from tblTeachersCourses
+
+
+select C_Name, E_FirstName, E_LastName from tblTeacherCourses
 join tblCourses on TC_CourseID = C_ID
 join tblEmployees on TC_TeacherID = E_ID
 order by TC_ID
@@ -252,7 +258,7 @@ GO
 
 create view vwAverageGrades
 as
-select C_Name as 'Kurs', Round(AVG(G_Value), 2) as 'Medelbetyg' from tblStudentsCourses
+select C_Name as 'Kurs', Round(AVG(G_Value), 2) as 'Medelbetyg' from tblStudentCourses
 join tblGrades on SC_Grade = G_Letter
 join tblStudents on SC_StudentID = S_ID
 join tblCourses on SC_CourseID = C_ID AND SC_StudentID = 1
@@ -260,17 +266,17 @@ where G_Letter != '-' AND SC_StudentID = S_ID
 group by C_Name
 
 select * from tblStudents
-join tblStudentsCourses on S_ID = SC_StudentID
+join tblStudentCourses on S_ID = SC_StudentID
 where 15 < (select AVG(SC_Grade) from tblStudents)
 
 select S_FirstName, G_Value from tblStudents
-join tblStudentsCourses on S_ID = SC_StudentID
+join tblStudentCourses on S_ID = SC_StudentID
 join tblCourses on SC_CourseID = C_ID
 join tblGrades on SC_Grade = G_Letter
 where C_Name = 'Engelska 5'
 
 select top 50 percent (C_Name) as Kurs, Round(AVG(G_Value), 2) as 'Medelbetyg', MIN(G_Value) as 'Lägsta betyg', 
-MAX(G_Value) as 'Högsta betyg' from tblStudentsCourses
+MAX(G_Value) as 'Högsta betyg' from tblStudentCourses
 join tblGrades on G_Letter = SC_Grade
 join tblCourses on C_ID = SC_CourseID
 group by C_Name
@@ -284,8 +290,8 @@ create view vwTeachersPrograms
 as
 select (E_FirstName + ' ' + E_LastName) as 'Namn' from tblClasses
 join tblStudents on S_ClassID = Cl_ID
-join tblStudentsCourses on S_ID = SC_StudentID
-join tblTeachersCourses on SC_CourseID = TC_CourseID
+join tblStudentCourses on S_ID = SC_StudentID
+join tblTeacherCourses on SC_CourseID = TC_CourseID
 join tblEmployees on TC_TeacherID = E_ID
 
 go
@@ -293,9 +299,20 @@ go
 select S_FirstName+' '+S_LastName as Namn, Cl_Name as Klass, E_FirstName+' ' +E_LastName as Lärare, C_Name
 from tblStudents
 join tblClasses on S_ClassID = Cl_ID
-join tblStudentsCourses on S_ID = SC_StudentID
+join tblStudentCourses on S_ID = SC_StudentID
 join tblCourses on SC_CourseID = C_ID
-join tblTeachersCourses on SC_CourseID = TC_CourseID
+join tblTeacherCourses on SC_CourseID = TC_CourseID
 join tblEmployees on TC_TeacherID = E_ID
 where S_ID = 1
 order by C_Name asc
+
+GO
+
+ALTER TABLE tblStudents
+ALTER COLUMN S_SecurityNumber 
+ Add Constraint check_Month
+  Check(Select Substring(S_SecurityNumber, 2, 2) < 13 from tblStudents)
+  Add Constraint check_Day
+  Check(Select Substring(S_SecurityNumber, 4, 2).To < 32 from tblStudents) 
+  Add Constraint check_Line
+  Check(Select Substring(S_SecurityNumber, 6, 1) = '-' from tblStudents) 
