@@ -288,6 +288,42 @@ group by C_Name
 
 go
 
+create view FirstGraders
+as
+select C_Name as 'Kurs', (Round(AVG(G_Value), 2) )as 'Medelbetyg' from tblStudentCourses
+join tblCourses on SC_CourseID = C_ID
+join tblGrades on SC_Grade = G_Letter
+join tblStudents on SC_StudentID = S_ID
+join tblClasses on S_ClassID = Cl_ID
+where G_Letter != '-' and SUBSTRING(Cl_Name, 3, 2) = '21'
+group by C_Name
+
+go
+
+create view SecondGraders
+as
+select C_Name as 'Kurs', (Round(AVG(G_Value), 2) )as 'Medelbetyg' from tblStudentCourses
+join tblCourses on SC_CourseID = C_ID
+join tblGrades on SC_Grade = G_Letter
+join tblStudents on SC_StudentID = S_ID
+join tblClasses on S_ClassID = Cl_ID
+where G_Letter != '-' and SUBSTRING(Cl_Name, 3, 2) = '20'
+group by C_Name
+
+go
+
+create view ThirdGraders
+as
+select C_Name as 'Kurs', (Round(AVG(G_Value), 2) )as 'Medelbetyg' from tblStudentCourses
+join tblCourses on SC_CourseID = C_ID
+join tblGrades on SC_Grade = G_Letter
+join tblStudents on SC_StudentID = S_ID
+join tblClasses on S_ClassID = Cl_ID
+where G_Letter != '-' and SUBSTRING(Cl_Name, 3, 2) = '19'
+group by C_Name
+
+go
+
 select S_FirstName + ' ' + S_LastName as 'Elev', G_Value as 'Betyg' from tblStudentCourses
 join tblCourses on SC_CourseID = C_ID
 join tblGrades on SC_Grade = G_Letter
@@ -324,11 +360,19 @@ go
 
 create view vwTeachersPrograms
 as
-select (E_FirstName + ' ' + E_LastName) as 'Namn' from tblClasses
+select distinct(E_FirstName + ' ' + E_LastName) as 'Lärare', 
+CASE
+When Substring(Cl_Name, 1, 2) = 'DE' then 'Design'
+When Substring(Cl_Name, 1, 2) = 'MA' then 'Maskin'
+When Substring(Cl_Name, 1, 2) = 'NA' then 'Natur'
+end as 'Utbildning' from tblClasses
 join tblStudents on S_ClassID = Cl_ID
 join tblStudentCourses on S_ID = SC_StudentID
 join tblTeacherCourses on SC_CourseID = TC_CourseID
 join tblEmployees on TC_TeacherID = E_ID
+
+select * from vwTeachersPrograms
+order by 'Lärare' asc
 
 go
 
@@ -344,18 +388,6 @@ go
 select * from vwPaymentDepartment
 
 go
-
-select S_FirstName+' '+S_LastName as Namn, Cl_Name as Klass, E_FirstName+' ' +E_LastName as Lärare, C_Name
-from tblStudents
-join tblClasses on S_ClassID = Cl_ID
-join tblStudentCourses on S_ID = SC_StudentID
-join tblCourses on SC_CourseID = C_ID
-join tblTeacherCourses on SC_CourseID = TC_CourseID
-join tblEmployees on TC_TeacherID = E_ID
-where S_ID = 1
-order by C_Name asc
-
-GO
 
 ALTER TABLE tblStudents 
 ALTER COLUMN S_SecurityNumber 
@@ -374,7 +406,7 @@ join tblCourses on SC_CourseID = C_ID
 join tblTeacherCourses on SC_CourseID = TC_CourseID
 join tblEmployees on TC_TeacherID = E_ID
 join tblClasses on S_ClassID = Cl_ID
-where SC_Grade != '-' and TC_IsGrader = 0
+where /*SC_Grade != '-' and*/ TC_IsGrader = 0
 
 select * from vwClassesStudentsGrades
 where Elev = 'Gordon Sanders'
