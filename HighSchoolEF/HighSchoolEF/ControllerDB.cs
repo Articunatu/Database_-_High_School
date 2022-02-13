@@ -40,9 +40,11 @@ namespace HighSchoolDB
             Console.WriteLine("\t10. Antal personer per arbetsroll"); ///VS
             Console.WriteLine("\t11. Information om alla elever"); ///VS
             Console.WriteLine("\t12. Aktiva kurser"); ///VS
-            Console.WriteLine("\t13. Medellön per arbetsroll"); ///SQL
-            Console.WriteLine("\t14. All info om en elev"); ///SQL
-            Console.WriteLine("\t15. Sätta betyg på en elev"); ///SQL
+            Console.WriteLine("\t13. Medellön per avdelning"); ///SQL
+            Console.WriteLine("\t14. Total utbetalning per avdelning"); ///SQL
+            Console.WriteLine("\t15. All info om en elev"); ///SQL
+            Console.WriteLine("\t16. Sätta betyg på en elev"); ///SQL
+            Console.WriteLine("\t16. Korrigera en elevs info"); ///EF
 
             int choice = Input();
             switch (choice)
@@ -61,9 +63,11 @@ namespace HighSchoolDB
                 case 11: EveryStudentInfo(); break;
                 case 12: ActiveCourses(); break;
                 case 13: MonthlySalaries(); break;
-                case 14: OneStudentsInfo(); break;
-                case 15: MonthlySalaries(); break;
-                default: GradeOneStudent(); break;
+                case 14: DepartmentPay(); break;
+                case 15: OneStudentsInfo(); break;
+                case 16: GradeOneStudent(); break;
+                case 17: UpdateStudentInfo(); break;
+                default: Console.WriteLine("Välj ett giltigt alternativ!\n"); LoadingMenu(); break;
             }
         }
 
@@ -325,6 +329,7 @@ namespace HighSchoolDB
 
         static void StaffInfo()
         {
+            Console.WriteLine("INFO OM PERSONAL:\n");
             var staffInfo = from VwEmployeesInfo in context.VwEmployeesInfo
                             select VwEmployeesInfo;
 
@@ -338,7 +343,17 @@ namespace HighSchoolDB
 
         static void StudentsCourses()
         {
+            Console.WriteLine("ELEVERS AVSLUTADE KURSER OCH BETYG:\n");
+            var studCours = from VwClassesStudentsGrades in context.VwClassesStudentsGrades
+                            select VwClassesStudentsGrades;
 
+            foreach (var item in studCours)
+            {
+                Console.WriteLine(item.Elev);
+                Console.WriteLine(item.Kurs);
+                Console.WriteLine(item.Betyg);
+                Console.WriteLine(item.Datum + "\n");
+            }
         }
 
         static void AmountOfStaff()
@@ -418,9 +433,30 @@ namespace HighSchoolDB
             LoadingMenu();
         }
 
+        static void DepartmentPay()
+        {
+            Console.WriteLine("TOTAL UTBETALNING PER AVDELNING:\n");
+            var totalPay = from VwPaymentDepartment in context.VwPaymentDepartment
+                           select VwPaymentDepartment;
+
+            foreach (var item in totalPay)
+            {
+                Console.Write(item.Avdelning + "\t");
+                Console.WriteLine(item.Utbetalning);
+            }
+        }
+
         static void MonthlySalaries()
         {
-            //var monthlySalaries = from 
+            Console.WriteLine("MEDELLÖN PER AVDELNING:\n");
+            var monthlySalaries = from VwStaffAvgSalary in context.VwStaffAvgSalary
+                                  select VwStaffAvgSalary;
+
+            foreach (var item in monthlySalaries)
+            {
+                Console.Write(item.Avdelning + "\t");
+                Console.WriteLine(item.Medellön);
+            }
         }
 
         static void OneStudentsInfo()
@@ -429,6 +465,11 @@ namespace HighSchoolDB
         }
 
         static void GradeOneStudent()
+        {
+            //exec proc ada
+        }
+
+        static void UpdateStudentInfo()
         {
 
         }

@@ -261,7 +261,7 @@ join tblStudentCourses as One on S_ID = One.SC_StudentID
 join tblCourses on One.SC_CourseID = C_ID
 join tblStudentCourses as Two on C_ID = Two.SC_CourseID
 join tblGrades on Two.SC_Grade = G_Letter
-where G_Letter != '-' AND One.SC_StudentID = 1
+where G_Letter != '-' AND One.SC_StudentID = 1 AND convert(int, SUBSTRING(S_SecurityNumber, 9, 1))%2=0
 group by C_Name
 
 go
